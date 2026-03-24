@@ -568,7 +568,36 @@
     (function () {
       var REST_DAYS  = new Set([10, 20, 30, 40, 50, 60, 70, 80, 90, 100]);
       var BUILT_DAYS = new Set([]);
-      var TODAY_DAY  = 1;
+
+      // Auto-detect today's challenge day
+      function calculateTodayDay() {
+        var START = new Date(2026, 2, 26); // March 26, 2026
+        START.setHours(0, 0, 0, 0);
+        var today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        // Before challenge starts → show Day 1 as TODAY
+        if (today < START) return 1;
+
+        // If today is a weekend, rewind to most recent weekday
+        var eff = new Date(today);
+        var dow = eff.getDay();
+        if (dow === 0) eff.setDate(eff.getDate() - 2); // Sunday → Friday
+        if (dow === 6) eff.setDate(eff.getDate() - 1); // Saturday → Friday
+
+        // Count weekdays (Mon–Fri) from start date up to effective date, inclusive
+        var count = 0;
+        var cur = new Date(START);
+        while (cur <= eff) {
+          var d = cur.getDay();
+          if (d !== 0 && d !== 6) count++;
+          cur.setDate(cur.getDate() + 1);
+        }
+
+        return Math.min(count, 100); // Cap at Day 100
+      }
+
+      var TODAY_DAY = calculateTodayDay();
 
       var CHALLENGE_DATA = {
         1: {
